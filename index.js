@@ -46,6 +46,31 @@ app.post("/task", async (req,res) =>{
     }
 })
 
+app.patch("/task/:id", async (req,res)=>{
+    try{
+        const taskId = req.params.id
+        const taskData = req.body
+        const taskUpdate = await TaskModel.findById(taskId)
+
+        const allowedUpdates = ['isCompleted'];
+        const requestedUpdates = Object.keys(taskData)
+
+        for(update of requestedUpdates){
+            if(allowedUpdates.includes(update)){
+                taskUpdate[update] = taskData[update]
+            }else{
+                return res.status(500).send('one or more fields are not editable')
+            }
+        }
+
+        await taskUpdate.save()
+        return res.status(200).send(taskUpdate)
+    }catch(error){
+        res.status(500).send(error.message)
+    }
+
+})
+
 app.delete("/task/:id", async (req,res)=>{
     try{
         const taskId = req.params.id
